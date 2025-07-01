@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+# Run quick validation before push
+npm run validate:quick
+
+echo "✅ Pre-push checks passed!"

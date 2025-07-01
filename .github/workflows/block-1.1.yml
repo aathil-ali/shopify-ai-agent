@@ -1,0 +1,196 @@
+name: 🏗️ Block 1.1 - Project Setup & Basic Configuration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  setup-validation:
+    name: 📦 Setup Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🔄 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 📥 Install Dependencies
+      run: npm ci
+      
+    - name: 🔍 Verify Package Installation
+      run: |
+        npm list --depth=0
+        echo "✅ Dependencies installed successfully"
+
+  typescript-validation:
+    name: 🔧 TypeScript Validation
+    runs-on: ubuntu-latest
+    needs: setup-validation
+    
+    steps:
+    - name: 🔄 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 📥 Install Dependencies
+      run: npm ci
+      
+    - name: 🔍 TypeScript Type Checking
+      run: npm run type-check
+      
+    - name: 🏗️ TypeScript Build
+      run: npm run build
+      
+    - name: 📁 Verify Build Output
+      run: |
+        ls -la dist/
+        echo "✅ Build completed successfully"
+
+  code-quality:
+    name: 🎨 Code Quality
+    runs-on: ubuntu-latest
+    needs: setup-validation
+    
+    steps:
+    - name: 🔄 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 📥 Install Dependencies
+      run: npm ci
+      
+    - name: 🧹 ESLint Check
+      run: npm run lint
+      
+    - name: 💎 Prettier Check
+      run: npm run format:check
+      
+    - name: ✅ Code Quality Validation
+      run: echo "✅ Code quality checks passed"
+
+  testing:
+    name: 🧪 Testing
+    runs-on: ubuntu-latest
+    needs: [typescript-validation, code-quality]
+    
+    steps:
+    - name: 🔄 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 📥 Install Dependencies
+      run: npm ci
+      
+    - name: 🧪 Run Block 1.1 Tests
+      run: npm run test:block-1.1
+      
+    - name: 📊 Generate Coverage Report
+      run: npm run test:coverage -- --testPathPattern=block-1.1
+      
+    - name: 📈 Upload Coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: block-1.1
+        name: block-1.1-coverage
+        fail_ci_if_error: false
+
+  validation-complete:
+    name: ✅ Block 1.1 Validation Complete
+    runs-on: ubuntu-latest
+    needs: [setup-validation, typescript-validation, code-quality, testing]
+    
+    steps:
+    - name: 🎉 Validation Summary
+      run: |
+        echo "🎯 Block 1.1: Project Setup & Basic Configuration"
+        echo "✅ Package setup validation passed"
+        echo "✅ TypeScript compilation passed"
+        echo "✅ Code quality checks passed"
+        echo "✅ Tests passed"
+        echo ""
+        echo "🚀 Ready for Block 1.2: Environment & Config Management"
+
+  # Security scanning
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    needs: setup-validation
+    
+    steps:
+    - name: 🔄 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 📥 Install Dependencies
+      run: npm ci
+      
+    - name: 🔍 Run npm audit
+      run: npm audit --audit-level=moderate
+      continue-on-error: true
+      
+    - name: 🛡️ Security Scan Complete
+      run: echo "✅ Security scan completed"
+
+  # Multi-platform testing
+  cross-platform:
+    name: 🌐 Cross-Platform Testing
+    runs-on: ${{ matrix.os }}
+    needs: setup-validation
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['18.x', '20.x']
+    
+    steps:
+    - name: 🔄 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: 📥 Install Dependencies
+      run: npm ci
+      
+    - name: 🔍 Type Check
+      run: npm run type-check
+      
+    - name: 🏗️ Build
+      run: npm run build
+      
+    - name: 🧪 Test
+      run: npm run test:block-1.1
